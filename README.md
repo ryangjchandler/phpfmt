@@ -44,4 +44,4 @@ phpfmt run
 
 ## Contributing
 
-All contributions are welcome. Please consult the [Issues](/issues) page to see what we need help with.
+All contributions are welcome. Please consult the [Issues](https://github.com/ryangjchandler/phpfmt/issues) page to see what we need help with.
