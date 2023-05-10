@@ -41,3 +41,7 @@ phpfmt run
 * [ ] Ensure formatted strings maintain escape sequences and line breaks.
 * [ ] Make method chains more readable across multiple lines.
 * [ ] Provide configuration options for concatenation spacing.
+
+## Contributing
+
+All contributions are welcome. Please consult the [Issues](/issues) page to see what we need help with.
