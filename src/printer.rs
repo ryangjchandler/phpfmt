@@ -1450,7 +1450,7 @@ fn print_expression(state: &mut PrinterState, expression: &Expression) {
             }
             state.write("`");
         }
-        Expression::AnonymousClass(expression) => print_anonymous_class(state, expression),
+        Expression::AnonymousClass(expression) => unreachable!(),
         Expression::Bool(BoolExpression { value }) => {
             state.write(value.to_string());
         }
@@ -1573,12 +1573,20 @@ fn print_expression(state: &mut PrinterState, expression: &Expression) {
 
 fn print_new(state: &mut PrinterState, target: &Expression, arguments: Option<&ArgumentList>) {
     state.write("new ");
-    print_expression(state, target);
-    state.write("(");
-    if let Some(arguments) = arguments {
-        print_argument_list(state, arguments);
+
+    match target {
+        Expression::AnonymousClass(expression) => {
+            print_anonymous_class(state, expression, arguments);
+        },
+        _ => {
+            print_expression(state, target);
+            state.write("(");
+            if let Some(arguments) = arguments {
+                print_argument_list(state, arguments);
+            }
+            state.write(")");
+        }
     }
-    state.write(")");
 }
 
 fn print_magic_constant(state: &mut PrinterState, constant: &MagicConstantExpression) {
@@ -2376,8 +2384,14 @@ fn print_string_part(state: &mut PrinterState, part: &StringPart) {
     }
 }
 
-fn print_anonymous_class(state: &mut PrinterState, class: &AnonymousClassExpression) {
+fn print_anonymous_class(state: &mut PrinterState, class: &AnonymousClassExpression, arguments: Option<&ArgumentList>) {
     state.write("class ");
+
+    if let Some(arguments) = arguments {
+        state.write("(");
+        print_argument_list(state, arguments);
+        state.write(")");
+    }
     
     if let Some(ClassExtends { parent, .. }) = &class.extends {
         state.write(" extends ");
