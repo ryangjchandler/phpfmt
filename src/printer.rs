@@ -21,7 +21,7 @@ use php_parser_rs::{
         goto::{GotoStatement, LabelStatement},
         identifiers::{DynamicIdentifier, Identifier, SimpleIdentifier},
         interfaces::{InterfaceBody, InterfaceExtends, InterfaceMember, InterfaceStatement},
-        literals::{Literal, LiteralFloat, LiteralInteger, LiteralString},
+        literals::{Literal, LiteralFloat, LiteralInteger, LiteralString, LiteralStringKind},
         loops::{
             BreakStatement, ContinueStatement, DoWhileStatement, ForStatement, ForStatementBody,
             ForeachStatement, ForeachStatementBody, ForeachStatementIterator, Level,
@@ -2020,8 +2020,17 @@ fn print_arithmetic_operation(state: &mut PrinterState, operation: &ArithmeticOp
 
 fn print_literal(state: &mut PrinterState, literal: &Literal) {
     match literal {
-        Literal::String(LiteralString { value, .. }) => {
-            state.write(value.to_string());
+        Literal::String(LiteralString { value, kind: LiteralStringKind::SingleQuoted, .. }) => {
+            let value_string = value.to_string().replace("'", "\\'");
+            state.write("'");
+            state.write(value_string);
+            state.write("'");
+        }
+        Literal::String(LiteralString { value, kind: LiteralStringKind::DoubleQuoted, .. }) => {
+            let value_string = value.to_string().replace("\"", "\\\"");
+            state.write("\"");
+            state.write(value_string);
+            state.write("\"");
         }
         Literal::Integer(LiteralInteger { value, .. }) => {
             state.write(value.to_string());
@@ -2334,6 +2343,7 @@ fn print_arrow_function(state: &mut PrinterState, function: &ArrowFunctionExpres
 }
 
 fn print_interpolated_string(state: &mut PrinterState, parts: &[StringPart]) {
+    state.write("\"");
     for part in parts.iter() {
         print_string_part(state, part);
     }

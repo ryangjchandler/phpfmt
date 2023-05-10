@@ -9,7 +9,7 @@ edition = "2021"
 clap = { version = "4.2.7", features = ["derive"] }
 colored = "2.0.0"
 discoverer = "0.2.0"
-php-parser-rs = "0.1.1"
+php-parser-rs = { path = "../../php-rust-tools/parser" }
 serde = { version = "1.0.162", features = ["derive"] }
 toml = "0.7.3"
 
