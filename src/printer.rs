@@ -2,7 +2,7 @@ use php_parser_rs::{
     lexer::byte_string::ByteString,
     parser::ast::{
         arguments::{Argument, ArgumentList, NamedArgument, PositionalArgument},
-        classes::{ClassExtends, ClassImplements, ClassMember, ClassStatement},
+        classes::{ClassExtends, ClassImplements, ClassMember, ClassStatement, AnonymousClassExpression, AnonymousClassMember},
         comments::Comment,
         constant::{ClassishConstant, ConstantEntry, ConstantStatement},
         control_flow::{IfStatement, IfStatementBody, IfStatementElse, IfStatementElseIf},
@@ -710,6 +710,19 @@ fn print_class_member(state: &mut PrinterState, member: &ClassMember) {
         ClassMember::AbstractConstructor(method) => print_abstract_constructor(state, method),
         ClassMember::ConcreteMethod(method) => print_concrete_method(state, method),
         ClassMember::ConcreteConstructor(method) => print_concrete_constructor(state, method),
+    }
+}
+
+fn print_anonymous_class_member(state: &mut PrinterState, member: &AnonymousClassMember) {
+    match member {
+        AnonymousClassMember::Constant(constant) => {
+            print_classish_constant(state, constant);
+        }
+        AnonymousClassMember::TraitUsage(trait_usage) => print_trait_usage(state, trait_usage),
+        AnonymousClassMember::Property(property) => print_property(state, property),
+        AnonymousClassMember::VariableProperty(property) => print_variable_property(state, property),
+        AnonymousClassMember::ConcreteMethod(method) => print_concrete_method(state, method),
+        AnonymousClassMember::ConcreteConstructor(method) => print_concrete_constructor(state, method),
     }
 }
 
@@ -1437,7 +1450,7 @@ fn print_expression(state: &mut PrinterState, expression: &Expression) {
             }
             state.write("`");
         }
-        Expression::AnonymousClass(_) => todo!(),
+        Expression::AnonymousClass(expression) => print_anonymous_class(state, expression),
         Expression::Bool(BoolExpression { value }) => {
             state.write(value.to_string());
         }
@@ -2361,4 +2374,40 @@ fn print_string_part(state: &mut PrinterState, part: &StringPart) {
             state.write("}");
         }
     }
+}
+
+fn print_anonymous_class(state: &mut PrinterState, class: &AnonymousClassExpression) {
+    state.write("class ");
+    
+    if let Some(ClassExtends { parent, .. }) = &class.extends {
+        state.write(" extends ");
+        print_simple_identifier(state, parent);
+    }
+
+    if let Some(ClassImplements { interfaces, .. }) = &class.implements {
+        state.write(" implements ");
+        for (i, interface) in interfaces.inner.iter().enumerate() {
+            if i > 0 {
+                state.write(", ");
+            }
+            print_simple_identifier(state, interface);
+        }
+    }
+
+    state.write(" {");
+    state.indent();
+    state.new_line();
+
+    for (i, member) in class.body.members.iter().enumerate() {
+        print_anonymous_class_member(state, member);
+
+        if i < class.body.members.len() - 1 {
+            state.new_line();
+            state.new_line();
+        }
+    }
+
+    state.dedent();
+    state.new_line();
+    state.write("}");
 }
