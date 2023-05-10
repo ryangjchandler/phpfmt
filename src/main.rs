@@ -1,3 +1,5 @@
+use std::path::PathBuf;
+
 use clap::{Parser, Subcommand};
 
 mod cmd;
@@ -20,7 +22,10 @@ enum Command {
     Init,
 
     #[clap(about = "Run the formatter.")]
-    Run,
+    Run {
+        #[clap(help = "An optional file to format.")]
+        file: Option<PathBuf>,
+    },
 }
 
 fn main() {
@@ -28,7 +33,7 @@ fn main() {
 
     match app.command {
         Command::Init => cmd::init(),
-        Command::Run => {
+        Command::Run { file } => {
             let config = match config::load() {
                 Ok(config) => config,
                 Err(error) => {
@@ -44,7 +49,7 @@ fn main() {
                 }
             };
 
-            cmd::run(config);
+            cmd::run(config, file);
         }
     }
 }

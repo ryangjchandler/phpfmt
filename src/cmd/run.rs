@@ -1,11 +1,14 @@
 use std::path::PathBuf;
 use colored::Colorize;
-use php_parser_rs::parser::error::ParseErrorStack;
 
 use crate::config::Config;
 
-pub fn run(config: Config) {
-    let files = discoverer::discover(&["php"], &config.paths.iter().map(String::as_str).collect::<Vec<&str>>()[..]);
+pub fn run(config: Config, file: Option<PathBuf>) {
+    let files = if let Some(file) = file {
+        Ok(vec![file])
+    } else {
+        discoverer::discover(&["php"], &config.paths.iter().map(String::as_str).collect::<Vec<&str>>()[..])
+    };
 
     if files.is_err() {
         eprintln!("Failed to discover files.");
